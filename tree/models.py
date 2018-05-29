@@ -2,8 +2,16 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from django.db.models import Q
 from datetime import datetime
 # Create your models here.
+
+
+class MyChildManager(models.Manager):
+    def is_mine(self):
+        iam = Father.objects.get(Q(name="Andrzej") & Q(last_name="Michalski"))
+        qs = MyChilds.mychilds_objects.filter(father=iam)
+        return qs
 
 class Father(models.Model):
     name = models.CharField(max_length=50)
@@ -27,3 +35,20 @@ class Child(models.Model):
             return True
         else:
             return False
+
+    mychilds_objects = MyChildManager()
+
+
+class ChildIsToddler(Child):
+    class Meta:
+        proxy = True
+        ordering = ['name']
+        verbose_name_plural = "Toddler's child"
+
+
+class MyChilds(Child):
+    class Meta:
+        proxy = True
+        verbose_name_plural = "My childs"
+
+    mychilds_objects = MyChildManager()
