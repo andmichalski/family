@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Q
 from datetime import datetime
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.admin.helpers import ActionForm
 # Create your models here.
 
 
@@ -48,3 +49,6 @@ class MyChilds(Child):
     class Meta:
         proxy = True
         verbose_name_plural = "My childs"
+
+class UpdateLastNameForm(ActionForm):
+    last_name = models.CharField(max_length=50)
