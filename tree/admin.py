@@ -13,7 +13,7 @@ class ChildInline(admin.TabularInline):
 class ChildAdmin(admin.ModelAdmin):
     search_fields = ["first_name"]
     list_display = ['name', 'last_name', 'birth']
-    date_hierarchy = 'birth' #TODO why can not do with father
+    date_hierarchy = 'birth'
     raw_id_fields = ("father",)
 
 
