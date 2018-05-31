@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+Insert new last name for selected records
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="hidden" name="action" value="change_lastname" />
+        <input type="submit" name="apply" value="Apply last name" />
+    </form>
+    <p>Change last name for users:</p>
+        {% for user in users %}
+        <p>{{ user }}</p>
+        {% endfor %}
+{% endblock %}
