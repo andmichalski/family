@@ -7,6 +7,8 @@ from django.shortcuts import render
 from django.core import serializers
 from django.http import HttpResponseRedirect
 from django import forms
+from django.conf.urls import url
+from django.template.response import TemplateResponse
 
 # Register your models here.
 
@@ -20,6 +22,7 @@ class ChildAdmin(admin.ModelAdmin):
     date_hierarchy = 'birth'
     raw_id_fields = ("father",)
     actions = ["change_last_name_michalski", "export_to_json", "change_lastname"]
+    change_list_template = "admin/tree/child/change_view.html"
 
     def change_last_name_michalski(self, request, queryset):
         queryset.update(last_name="Michalski")
@@ -49,6 +52,36 @@ class ChildAdmin(admin.ModelAdmin):
         return render(request, "admin/tree/child/change_last_name.html", {'users': queryset, 'form':form})
 
     change_lastname.short_description = "Change to custom last name"
+
+    def get_urls(self):
+        urls = super(ChildAdmin, self).get_urls()
+        my_urls = [url(r'^childview', self.childview),
+                   url(r'^childdetail', self.childdetailview),
+                   url(r'^childlist', self.childlistview)]
+        return my_urls + urls
+
+    def childview(self, request):
+        fathers = Father.objects.all()
+        return TemplateResponse(request, "admin/tree/child/gen_tree.html", {'fathers': fathers})
+
+    def childdetailview(self,request):
+        if 'child' in request.GET:
+            child = Child.objects.get(id=request.GET['child'])
+
+        return TemplateResponse(request, "admin/tree/child/child_detail.html", {'child': child})
+
+    def childlistview(self, request):
+        if 'name' in request.GET:
+            childs = Child.objects.filter(name=request.GET['name'])
+        elif 'last_name' in request.GET:
+            childs = Child.objects.filter(last_name=request.GET['last_name'])
+        elif 'birth' in request.GET:
+            childs = Child.objects.filter(birth=request.GET['birth'])
+        elif 'father' in request.GET:
+            childs = Child.objects.filter(father=request.GET['father'])
+        else:
+            childs = Child.objects.all()
+        return TemplateResponse(request, "admin/tree/child/child_list.html", {'childs': childs})
 
 @admin.register(Father)
 class FatherAdmin(admin.ModelAdmin):
