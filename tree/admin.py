@@ -87,9 +87,20 @@ class ChildAdmin(admin.ModelAdmin):
             childs = Child.objects.all()
         return TemplateResponse(request, "admin/tree/child/child_list.html", {'childs': childs})
 
+
 @admin.register(Father)
 class FatherAdmin(admin.ModelAdmin):
     inlines = [ChildInline]
+    change_list_template = "admin/tree/father/change_view.html"
+
+    def get_urls(self):
+        urls = super(FatherAdmin, self).get_urls()
+        my_urls = [url(r'^parentlist', self.parentlist, name="parentlist")]
+        return my_urls + urls
+
+    def parentlist(self, request):
+        parents = Father.objects.all()
+        return TemplateResponse(request, "admin/tree/father/parent_list.html", {'parents': parents})
 
 @admin.register(ChildIsToddler)
 class ChildIsToddlerAdmin(admin.ModelAdmin):
