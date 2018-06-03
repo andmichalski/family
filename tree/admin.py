@@ -55,9 +55,9 @@ class ChildAdmin(admin.ModelAdmin):
 
     def get_urls(self):
         urls = super(ChildAdmin, self).get_urls()
-        my_urls = [url(r'^childview', self.childview),
-                   url(r'^childdetail', self.childdetailview),
-                   url(r'^childlist', self.childlistview)]
+        my_urls = [url(r'^childview', self.childview, name="childview"),
+                   url(r'^childdetail', self.childdetailview, name="childdetail"),
+                   url(r'^childlist', self.childlistview, name="childlist")]
         return my_urls + urls
 
     def childview(self, request):
@@ -75,10 +75,14 @@ class ChildAdmin(admin.ModelAdmin):
             childs = Child.objects.filter(name=request.GET['name'])
         elif 'last_name' in request.GET:
             childs = Child.objects.filter(last_name=request.GET['last_name'])
-        elif 'birth' in request.GET:
-            childs = Child.objects.filter(birth=request.GET['birth'])
-        elif 'father' in request.GET:
-            childs = Child.objects.filter(father=request.GET['father'])
+        elif 'birth_user' in request.GET:
+            _id = int(request.GET['birth_user'])
+            _date = Child.objects.get(id=_id).birth
+            childs = Child.objects.filter(birth=_date)
+        elif 'father_user' in request.GET:
+            _id = int(request.GET['father_user'])
+            _father = Child.objects.get(id=_id).father
+            childs = Child.objects.filter(father=_father)
         else:
             childs = Child.objects.all()
         return TemplateResponse(request, "admin/tree/child/child_list.html", {'childs': childs})

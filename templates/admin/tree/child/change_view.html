@@ -2,19 +2,8 @@
 
 {% block object-tools %}
     <div>
-        <form action="childview/" method="POST">
-            {% csrf_token %}
-                <button type="submit">Genealogical Tree</button>
-        </form>
-        <form action="childdetail/" method="POST">
-            {% csrf_token %}
-                <button type="submit">Child detail view</button>
-        </form>
-        <form action="childlist/" method="POST">
-            {% csrf_token %}
-                <button type="submit">Children list</button>
-        </form>
-
+        <p><a href="{% url 'admin:childview' %}">Child Tree View</a></p>
+        <p><a href="{% url 'admin:childlist' %}">Child list</a></p>
     </div>
     <br />
     {{ block.super }}

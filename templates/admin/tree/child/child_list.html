@@ -1,6 +1,6 @@
 {% extends "admin/base_site.html" %}
 {% block content %}
     {% for child in childs %}
-        <ul><a href="childdetail?child={{ child.id }}">{{ child }}</a></ul>
+        <ul><a href="{% url 'admin:childdetail' %}?child={{ child.id }}">{{ child }}</a></ul>
     {% endfor %}
 {% endblock %}
