@@ -9,6 +9,7 @@ from django.http import HttpResponseRedirect
 from django import forms
 from django.conf.urls import url
 from django.template.response import TemplateResponse
+from django.db.models import Count
 
 # Register your models here.
 
@@ -99,7 +100,7 @@ class FatherAdmin(admin.ModelAdmin):
         return my_urls + urls
 
     def parentlist(self, request):
-        parents = Father.objects.all()
+        parents = Father.objects.prefetch_related('child_set').annotate(child_count = Count('child'))
         return TemplateResponse(request, "admin/tree/father/parent_list.html", {'parents': parents})
 
 @admin.register(ChildIsToddler)

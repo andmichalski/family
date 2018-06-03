@@ -5,6 +5,6 @@
         {% for child in parent.child_set.all %}
             <p>{{ child }}</p>
         {% endfor %}
-        <p>Number of childs: {{ parent.child_set.count }}</p><br>
+        <p>Number of childs: {{ parent.child_count }}</p><br>
     {% endfor %}
 {% endblock %}
