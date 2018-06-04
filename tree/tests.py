@@ -73,3 +73,6 @@ class ChildAdminTests(TestCase):
         self.assertEqual(Child.objects.filter(last_name="Pietraszek"), 0)
         Child.objects.filter(father__last_name="Pietraszek").update(last_name="Pietraszek")
         self.assertEqual(Child.objects.filter(last_name="Pietraszek").count(), 2)
+
+    def test_action_should_write_json_file(self):
+        self.assertFalse(1==1, "Failed!!!")
