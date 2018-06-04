@@ -6,6 +6,10 @@ from tree.models import Child, Father
 from datetime import datetime
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
+from admin import ChildAdmin
+from django.test import Client
+# from django.contrib import Admin
+from django.urls import reverse
 # Create your tests here.
 
 class MyChildManagerTests(TestCase):
@@ -48,3 +52,24 @@ class MyChildManagerTests(TestCase):
         Father.objects.get(id=1).delete()
         self.assertRaises(ObjectDoesNotExist)
 
+
+class ChildAdminTests(TestCase):
+
+    def setUp(self):
+        self.c = Client()
+        father1 = Father.objects.create(name="Andrzej", last_name="Michalski")
+        father2 = Father.objects.create(name="Marcin", last_name="Pietraszek")
+        Child.objects.create(name="Jan", last_name="Michalski", birth=datetime(2014, 9, 11), father=father1)
+        Child.objects.create(name="Franciszek", last_name="Pietraszek", birth=datetime(2018, 1, 5), father=father2)
+        Child.objects.create(name="Tomasz", last_name="Pietraszek", birth=datetime(2016, 11, 15), father=father2)
+
+    def test_should_change_last_name_michalski_when_call_queryset(self):
+        url = reverse("admin:tree_child_changelist")
+        childs = Child.objects.filter(father__last_name="Pietraszek")
+        data = {"action": "change_last_name_michalski", "_selected_action": [unicode(child.pk) for child in childs]}
+        response = self.c.post(url, data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        number_selected_childs = data["_selected_action"]
+        self.assertEqual(Child.objects.filter(last_name="Pietraszek"), 0)
+        Child.objects.filter(father__last_name="Pietraszek").update(last_name="Pietraszek")
+        self.assertEqual(Child.objects.filter(last_name="Pietraszek").count(), 2)
