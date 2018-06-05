@@ -76,4 +76,5 @@ class ChildAdminTests(TestCase):
         self.assertEqual(['Michalski', 'Michalski'], [c.last_name for c in Child.objects.filter(id__in=selected_ids)])
 
     def test_action_should_write_json_file(self):
+
         self.assertFalse(1==1, "Failed!!!")

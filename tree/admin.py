@@ -41,15 +41,13 @@ class ChildAdmin(admin.ModelAdmin):
         _last_name = forms.CharField(max_length=50, required=True)
 
     def change_lastname(self, request, queryset):
-        form = self.LastNameForm(request.POST)
+        form = self.LastNameForm(request.POST or None)
         if form.is_valid():
             form = self.LastNameForm(request.POST)
             new_last_name = request.POST['_last_name']
             queryset.update(last_name=new_last_name)
             self.message_user(request, "Changed in selected records last name to {}".format(new_last_name))
             return HttpResponseRedirect(request.get_full_path(), {'form': form})
-        else:
-            form = self.LastNameForm()
         return render(request, "admin/tree/child/change_last_name.html", {'users': queryset, 'form': form})
 
     change_lastname.short_description = "Change to custom last name"
