@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from .models import Child, Father, ChildIsToddler, MyChilds, UpdateLastNameForm
+from .models import Child, Father, ChildIsToddler, MyChilds
 from django.contrib import admin
 from datetime import datetime
 from django.shortcuts import render
@@ -38,19 +38,19 @@ class ChildAdmin(admin.ModelAdmin):
     export_to_json.short_description = "Export queryset to json"
 
     class LastNameForm(forms.Form):
-        _last_name = forms.CharField(max_length=50)
+        _last_name = forms.CharField(max_length=50, required=True)
 
-    def change_lastname(self, request,queryset):
-        form = None
-        if 'apply' in request.POST:
-            form = UpdateLastNameForm(request.POST)
+    def change_lastname(self, request, queryset):
+        form = self.LastNameForm(request.POST)
+        if form.is_valid():
+            form = self.LastNameForm(request.POST)
             new_last_name = request.POST['_last_name']
             queryset.update(last_name=new_last_name)
             self.message_user(request, "Changed in selected records last name to {}".format(new_last_name))
-            return HttpResponseRedirect(request.get_full_path())
-        if not form:
+            return HttpResponseRedirect(request.get_full_path(), {'form': form})
+        else:
             form = self.LastNameForm()
-        return render(request, "admin/tree/child/change_last_name.html", {'users': queryset, 'form':form})
+        return render(request, "admin/tree/child/change_last_name.html", {'users': queryset, 'form': form})
 
     change_lastname.short_description = "Change to custom last name"
 
