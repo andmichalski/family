@@ -46,6 +46,7 @@ class ChildAdmin(admin.ModelAdmin):
             form = self.LastNameForm(request.POST)
             new_last_name = request.POST['_last_name']
             queryset.update(last_name=new_last_name)
+            # TODO mock message
             self.message_user(request, "Changed in selected records last name to {}".format(new_last_name))
             return HttpResponseRedirect(request.get_full_path(), {'form': form})
         return render(request, "admin/tree/child/change_last_name.html", {'users': queryset, 'form': form})
