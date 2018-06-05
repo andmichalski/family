@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from tree.models import Child, Father
 from datetime import datetime
@@ -56,7 +56,6 @@ class MyChildManagerTests(TestCase):
 class ChildAdminTests(TestCase):
 
     def setUp(self):
-        self.c = Client()
         father1 = Father.objects.create(name="Andrzej", last_name="Michalski")
         father2 = Father.objects.create(name="Marcin", last_name="Pietraszek")
         Child.objects.create(name="Jan", last_name="Michalski", birth=datetime(2014, 9, 11), father=father1)
@@ -66,13 +65,15 @@ class ChildAdminTests(TestCase):
     def test_should_change_last_name_michalski_when_call_queryset(self):
         url = reverse("admin:tree_child_changelist")
         childs = Child.objects.filter(father__last_name="Pietraszek")
-        data = {"action": "change_last_name_michalski", "_selected_action": [unicode(child.pk) for child in childs]}
-        response = self.c.post(url, data, follow=True)
+        selected_ids = [child.pk for child in childs]
+
+        data = {"action": "change_last_name_michalski", "_selected_action": selected_ids}
+        admin_user = get_user_model().objects.create_superuser('admin', 'admin@example.com', 'password')
+
+        self.client.login(username=admin_user.username, password='password')
+        response = self.client.post(url, data, follow=True)
         self.assertEqual(response.status_code, 200)
-        number_selected_childs = data["_selected_action"]
-        self.assertEqual(Child.objects.filter(last_name="Pietraszek"), 0)
-        Child.objects.filter(father__last_name="Pietraszek").update(last_name="Pietraszek")
-        self.assertEqual(Child.objects.filter(last_name="Pietraszek").count(), 2)
+        self.assertEqual(['Michalski', 'Michalski'], [c.last_name for c in Child.objects.filter(id__in=selected_ids)])
 
     def test_action_should_write_json_file(self):
         self.assertFalse(1==1, "Failed!!!")
