@@ -1,0 +1,7 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+    <p>Name: {{ child.name }}&nbsp;&nbsp;&nbsp;&nbsp;<a href="{% url 'admin:childlist' %}?name={{ child.name }}">Find the same</a></p>
+    <p>Last name: {{ child.last_name }}&nbsp;&nbsp;&nbsp;&nbsp;<a href="{% url 'admin:childlist' %}?last_name={{ child.last_name }}">Find the same</a></p>
+    <p>Bithday: {{ child.birth }}&nbsp;&nbsp;&nbsp;&nbsp;<a href="{% url 'admin:childlist' %}?birth_user={{ child.id }}">Find the same</a></p></p>
+    <p>Father: {{ child.father }}&nbsp;&nbsp;&nbsp;&nbsp;<a href="{% url 'admin:childlist' %}?father_user={{ child.id }}">Find the same</a></p></p>
+{% endblock %}

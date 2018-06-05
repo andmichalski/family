@@ -1,0 +1,10 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+    {% for parent in parents %}
+        <b><p>{{ parent }}</p></b>
+        {% for child in parent.child_set.all %}
+            <p>{{ child }}</p>
+        {% endfor %}
+        <p>Number of childs: {{ parent.child_count }}</p><br>
+    {% endfor %}
+{% endblock %}

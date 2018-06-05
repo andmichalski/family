@@ -1,0 +1,11 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+    {% for father in fathers %}
+        <p>{{ father }} {% if father.child_set.count > 0 %}has childrens:{% else %}have no childrens!!!{% endif %}</p>
+        <p>
+        {% for child in father.child_set.all %}
+            <ul><a href="childdetail?child={{ child.id }}">{{ child }}</a></ul>
+        {% endfor %}
+        </p><br>
+    {% endfor %}
+{% endblock %}
