@@ -2,21 +2,17 @@
 from __future__ import unicode_literals
 
 from django.db import models
-from django.db.models import Q
-from datetime import datetime
 from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.admin.helpers import ActionForm
-from django import forms
 # Create your models here.
 
 
 class MyChildManager(models.Manager):
     def is_mine(self):
         try:
-            iam = Father.objects.get(Q(id=1) & Q(name="Andrzej") & Q(last_name="Michalski"))
+            iam = Father.objects.get(id=1, name="Andrzej", last_name="Michalski")
         except ObjectDoesNotExist:
             print "Andrzej Michalski have to be on the first place in database with id=1 !!!!!"
-        qs = MyChilds.mychilds_objects.filter(father=iam)
+        qs = iam.child_set.all()
         return qs
 
 class Father(models.Model):
