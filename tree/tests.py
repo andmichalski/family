@@ -1,15 +1,21 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.contrib.auth import get_user_model
-from django.test import TestCase
-from tree.models import Child, Father
+
+import json
 from datetime import datetime
-from django.db.models import Q
+from os import remove, path
+
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
-from admin import ChildAdmin
-from django.test import Client
-# from django.contrib import Admin
+from django.db.models import Q
+from django.test import TestCase
 from django.urls import reverse
+
+from tree.models import Child, Father
+from tree import admin
+from mock import patch, Mock, MagicMock
+
+
 # Create your tests here.
 
 class MyChildManagerTests(TestCase):
@@ -61,6 +67,10 @@ class ChildAdminTests(TestCase):
         Child.objects.create(name="Jan", last_name="Michalski", birth=datetime(2014, 9, 11), father=father1)
         Child.objects.create(name="Franciszek", last_name="Pietraszek", birth=datetime(2018, 1, 5), father=father2)
         Child.objects.create(name="Tomasz", last_name="Pietraszek", birth=datetime(2016, 11, 15), father=father2)
+        admin_user = get_user_model().objects.create_superuser('admin', 'admin@example.com', 'password')
+        self.client.login(username=admin_user.username, password='password')
+
+
 
     def test_should_change_last_name_michalski_when_call_queryset(self):
         url = reverse("admin:tree_child_changelist")
@@ -68,13 +78,39 @@ class ChildAdminTests(TestCase):
         selected_ids = [child.pk for child in childs]
 
         data = {"action": "change_last_name_michalski", "_selected_action": selected_ids}
-        admin_user = get_user_model().objects.create_superuser('admin', 'admin@example.com', 'password')
 
-        self.client.login(username=admin_user.username, password='password')
         response = self.client.post(url, data, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(['Michalski', 'Michalski'], [c.last_name for c in Child.objects.filter(id__in=selected_ids)])
 
     def test_action_should_write_json_file(self):
+        url = reverse("admin:tree_child_changelist")
+        child = Child.objects.get(id=1)
+        data = {"action": "export_to_json", "_selected_action": [child.pk]}
+        self.client.post(url, data, follow=True)
+        with open("json.txt", 'r') as f:
+            json_file = f.read()
 
-        self.assertFalse(1==1, "Failed!!!")
+        self.assertTrue(path.isfile("json.txt"))
+        remove("json.txt")
+
+        json_output = [{"model": "tree.child", "pk": 1,
+          "fields": {"name": "Jan", "last_name": "Michalski", "father": 1, "birth": "2014-09-11"}}]
+        json_file = json.loads(json_file)
+        self.assertEqual(json_output, json_file)
+
+    def test_should_change_last_name(self):
+        url = reverse("admin:tree_child_changelist")
+        child = Child.objects.get(id=1)
+        data = {"action": "change_lastname", "_selected_action": [child.pk], "_last_name": "Pietraszek"}
+        self.client.post(url, data, follow=True)
+        self.assertEqual("Pietraszek", Child.objects.get(id=1).last_name)
+
+    @patch('admin.ChildAdmin.message_user()')
+    def test_should_display_correct_message(self, mock_message):
+        url = reverse("admin:tree_child_changelist")
+        child = Child.objects.get(id=1)
+        data = {"action": "change_lastname", "_selected_action": [child.pk], "_last_name": "Pietraszek"}
+        response = self.client.post(url, data, follow=True)
+        print response
+#         TODO DEBUG this!!!

@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from .models import Child, Father, ChildIsToddler, MyChilds
-from django.contrib import admin
+
 from datetime import datetime
-from django.shortcuts import render
-from django.core import serializers
-from django.http import HttpResponseRedirect
+
 from django import forms
 from django.conf.urls import url
-from django.template.response import TemplateResponse
+from django.contrib import admin
+from django.core import serializers
 from django.db.models import Count
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from django.template.response import TemplateResponse
+
+from .models import Child, Father, ChildIsToddler, MyChilds
+
 
 # Register your models here.
 
