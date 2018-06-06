@@ -103,14 +103,17 @@ class ChildAdminTests(TestCase):
         url = reverse("admin:tree_child_changelist")
         child = Child.objects.get(id=1)
         data = {"action": "change_lastname", "_selected_action": [child.pk], "_last_name": "Pietraszek"}
-        self.client.post(url, data, follow=True)
+        response = self.client.post(url, data, follow=True)
         self.assertEqual("Pietraszek", Child.objects.get(id=1).last_name)
 
-    @patch('admin.ChildAdmin.message_user()')
+    @patch('tree.admin.ChildAdmin.message_user')
     def test_should_display_correct_message(self, mock_message):
         url = reverse("admin:tree_child_changelist")
         child = Child.objects.get(id=1)
         data = {"action": "change_lastname", "_selected_action": [child.pk], "_last_name": "Pietraszek"}
         response = self.client.post(url, data, follow=True)
-        print response
-#         TODO DEBUG this!!!
+
+        self.assertEqual(mock_message.call_count, 1)
+
+        response.wsgi_request.method = "POST"
+        mock_message.assert_has_calls(response.wsgi_request, unicode("Changed in selected records last name to Pietraszek"))
