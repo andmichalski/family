@@ -95,6 +95,7 @@ class ChildAdmin(admin.ModelAdmin):
 class FatherAdmin(admin.ModelAdmin):
     inlines = [ChildInline]
     change_list_template = "admin/tree/father/change_view.html"
+    list_display = ['father', 'childs']
 
     def get_urls(self):
         urls = super(FatherAdmin, self).get_urls()
@@ -104,6 +105,12 @@ class FatherAdmin(admin.ModelAdmin):
     def parentlist(self, request):
         parents = Father.objects.prefetch_related('child_set').annotate(child_count = Count('child'))
         return TemplateResponse(request, "admin/tree/father/parent_list.html", {'parents': parents})
+
+    def childs(self, obj):
+        return ", ".join([child.name for child in obj.child_set.all()])
+
+    def father(self, obj):
+        return obj
 
 @admin.register(ChildIsToddler)
 class ChildIsToddlerAdmin(admin.ModelAdmin):
