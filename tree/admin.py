@@ -20,6 +20,7 @@ from .models import Child, Father, ChildIsToddler, MyChilds
 class ChildInline(admin.TabularInline):
     model = Child
 
+
 @admin.register(Child)
 class ChildAdmin(admin.ModelAdmin):
     search_fields = ["first_name"]
@@ -67,7 +68,7 @@ class ChildAdmin(admin.ModelAdmin):
         fathers = Father.objects.all()
         return TemplateResponse(request, "admin/tree/child/gen_tree.html", {'fathers': fathers})
 
-    def childdetailview(self,request):
+    def childdetailview(self, request):
         if 'child' in request.GET:
             child = Child.objects.get(id=request.GET['child'])
 
@@ -103,7 +104,7 @@ class FatherAdmin(admin.ModelAdmin):
         return my_urls + urls
 
     def parentlist(self, request):
-        parents = Father.objects.prefetch_related('child_set').annotate(child_count = Count('child'))
+        parents = Father.objects.prefetch_related('child_set').annotate(child_count=Count('child'))
         return TemplateResponse(request, "admin/tree/father/parent_list.html", {'parents': parents})
 
     def childs(self, obj):
@@ -112,6 +113,7 @@ class FatherAdmin(admin.ModelAdmin):
     def father(self, obj):
         return obj
 
+
 @admin.register(ChildIsToddler)
 class ChildIsToddlerAdmin(admin.ModelAdmin):
 
@@ -119,6 +121,7 @@ class ChildIsToddlerAdmin(admin.ModelAdmin):
         toddler_year = datetime.now().year - 3
         qs = Child.objects.filter(birth__year__gt=toddler_year)
         return qs
+
 
 @admin.register(MyChilds)
 class MyChildsAdmin(admin.ModelAdmin):
