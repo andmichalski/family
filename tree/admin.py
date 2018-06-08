@@ -2,19 +2,20 @@
 from __future__ import unicode_literals
 
 from datetime import datetime
+from threading import Thread
 
 from django import forms
 from django.conf.urls import url
 from django.contrib import admin
 from django.core import serializers
+from django.core.mail import send_mail
 from django.db.models import Count
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.template.response import TemplateResponse
 
 from .models import Child, Father, ChildIsToddler, MyChilds
-from django.core.mail import send_mail
-from threading import Thread
+
 
 # Register your models here.
 
@@ -123,12 +124,13 @@ class FatherAdmin(admin.ModelAdmin):
             child_list = [child.name + " " + child.last_name for child in father.child_set.all()]
             text_message = "You have beautifull children: \n" + "\n".join(child_list) + "\nRegards"
             t = Thread(target=send_mail, args=("Hello father",
-                      text_message,
-                      "admin@family.com",
-                      email_address,))
+                                               text_message,
+                                               "admin@family.com",
+                                               email_address,))
             t.start
 
     send_email.short_description = "send_email"
+
 
 @admin.register(ChildIsToddler)
 class ChildIsToddlerAdmin(admin.ModelAdmin):

@@ -185,7 +185,8 @@ class FatherAndOtherClassAdminTests(ChildAdminTests):
     def test_child_toddler_view_should_display_correct_number_of_child(self):
         url = reverse("admin:tree_childistoddler_changelist")
         response = self.client.get(url)
-#       TODO how to get queryset NEXT TEST THE SAME
+
+    #       TODO how to get queryset NEXT TEST THE SAME
 
     @patch('tree.admin.Thread')
     def test_should_send_email(self, mock_sendmail):
