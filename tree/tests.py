@@ -187,7 +187,7 @@ class FatherAndOtherClassAdminTests(ChildAdminTests):
         response = self.client.get(url)
 #       TODO how to get queryset NEXT TEST THE SAME
 
-    @patch("tree.admin.FatherAdmin.send_email")
+    @patch('tree.admin.Thread')
     def test_should_send_email(self, mock_sendmail):
         url = reverse("admin:tree_father_changelist")
         father = Father.objects.get(id=2)
@@ -197,8 +197,7 @@ class FatherAndOtherClassAdminTests(ChildAdminTests):
 
         self.assertTrue(mock_sendmail.called)
 
-    @patch("django.core.mail")
-    @patch("tree.admin.FatherAdmin.send_email")
+    @patch("tree.admin.Thread")
     def test_should_send_multiple_mail(self, mock_sendmail):
         url = reverse("admin:tree_father_changelist")
         fathers = Father.objects.all()
@@ -206,5 +205,4 @@ class FatherAndOtherClassAdminTests(ChildAdminTests):
         response = self.client.post(url, data, follow=True)
 
         self.assertTrue(mock_sendmail.called)
-        self.assertEqual(mock_sendmail.send_mail.call_count, 2)
-        # TODO refractor this
+        self.assertEqual(mock_sendmail.call_count, 2)
