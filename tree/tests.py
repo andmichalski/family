@@ -61,8 +61,8 @@ class MyChildManagerTests(TestCase):
 class ChildAdminTests(TestCase):
 
     def setUp(self):
-        father1 = Father.objects.create(name="Andrzej", last_name="Michalski")
-        father2 = Father.objects.create(name="Marcin", last_name="Pietraszek")
+        father1 = Father.objects.create(name="Andrzej", last_name="Michalski", email="andrzej@michalski.pl")
+        father2 = Father.objects.create(name="Marcin", last_name="Pietraszek", email="marcin@pietraszek.pl")
         Child.objects.create(name="Jan", last_name="Michalski", birth=datetime(2014, 9, 11), father=father1)
         Child.objects.create(name="Franciszek", last_name="Pietraszek", birth=datetime(2018, 1, 5), father=father2)
         Child.objects.create(name="Tomasz", last_name="Pietraszek", birth=datetime(2016, 11, 15), father=father2)
@@ -186,3 +186,25 @@ class FatherAndOtherClassAdminTests(ChildAdminTests):
         url = reverse("admin:tree_childistoddler_changelist")
         response = self.client.get(url)
 #       TODO how to get queryset NEXT TEST THE SAME
+
+    @patch("tree.admin.FatherAdmin.send_email")
+    def test_should_send_email(self, mock_sendmail):
+        url = reverse("admin:tree_father_changelist")
+        father = Father.objects.get(id=2)
+        father.email = "marcin@pieraszek.pl"
+        data = {"action": "send_email", "_selected_action": [father.pk]}
+        response = self.client.post(url, data, follow=True)
+
+        self.assertTrue(mock_sendmail.called)
+
+    @patch("django.core.mail")
+    @patch("tree.admin.FatherAdmin.send_email")
+    def test_should_send_multiple_mail(self, mock_sendmail):
+        url = reverse("admin:tree_father_changelist")
+        fathers = Father.objects.all()
+        data = {"action": "send_email", "_selected_action": [father.pk for father in fathers]}
+        response = self.client.post(url, data, follow=True)
+
+        self.assertTrue(mock_sendmail.called)
+        self.assertEqual(mock_sendmail.send_mail.call_count, 2)
+        # TODO refractor this

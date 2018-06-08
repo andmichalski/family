@@ -13,7 +13,8 @@ from django.shortcuts import render
 from django.template.response import TemplateResponse
 
 from .models import Child, Father, ChildIsToddler, MyChilds
-
+from django.core.mail import send_mail
+from threading import Thread
 
 # Register your models here.
 
@@ -97,6 +98,7 @@ class FatherAdmin(admin.ModelAdmin):
     inlines = [ChildInline]
     change_list_template = "admin/tree/father/change_view.html"
     list_display = ['father', 'childs']
+    actions = ["send_email"]
 
     def get_urls(self):
         urls = super(FatherAdmin, self).get_urls()
@@ -113,6 +115,20 @@ class FatherAdmin(admin.ModelAdmin):
     def father(self, obj):
         return obj
 
+    def send_email(self, request, queryset):
+        num_fathers = queryset.count()
+        for i in range(num_fathers):
+            father = queryset[i]
+            email_address = father.email
+            child_list = [child.name + " " + child.last_name for child in father.child_set.all()]
+            text_message = "You have beautifull children: \n" + "\n".join(child_list) + "\nRegards"
+            t = Thread(target=send_mail, args=("Hello father",
+                      text_message,
+                      "admin@family.com",
+                      email_address,))
+            t.start
+
+    send_email.short_description = "send_email"
 
 @admin.register(ChildIsToddler)
 class ChildIsToddlerAdmin(admin.ModelAdmin):
