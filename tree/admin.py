@@ -117,9 +117,7 @@ class FatherAdmin(admin.ModelAdmin):
         return obj
 
     def send_email(self, request, queryset):
-        num_fathers = queryset.count()
-        for i in range(num_fathers):
-            father = queryset[i]
+        for father in queryset.prefetch_related('child_set').all():
             email_address = father.email
             child_list = [child.name + " " + child.last_name for child in father.child_set.all()]
             text_message = "You have beautifull children: \n" + "\n".join(child_list) + "\nRegards"
@@ -127,7 +125,7 @@ class FatherAdmin(admin.ModelAdmin):
                                                text_message,
                                                "admin@family.com",
                                                email_address,))
-            t.start
+            t.start()
 
     send_email.short_description = "send_email"
 
