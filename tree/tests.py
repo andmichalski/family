@@ -112,7 +112,8 @@ class ChildAdminTests(TestCase):
 
         self.assertEqual(mock_message.call_count, 1)
 
-        mock_message.assert_called_once_with(response.wsgi_request, unicode("Changed in selected records last name to Pietraszek"))
+        mock_message.assert_called_once_with(response.wsgi_request,
+                                             unicode("Changed in selected records last name to Pietraszek"))
 
     def test_should_find_child_with_same_name(self):
         father3 = Father.objects.create(name="Marcin", last_name="Tomasiak")
@@ -186,22 +187,22 @@ class FatherAndOtherClassAdminTests(ChildAdminTests):
 
     #       TODO how to get queryset NEXT TEST THE SAME
 
-    @patch('tree.admin.Thread')
-    def test_should_send_email(self, mock_thread):
+    @patch('tree.admin.send_mail')
+    def test_should_send_email(self, mock_sendmail):
         url = reverse("admin:tree_father_changelist")
         father = Father.objects.get(id=2)
         father.email = "marcin@pieraszek.pl"
         data = {"action": "send_email", "_selected_action": [father.pk]}
-        response = self.client.post(url, data, follow=True)
+        response = self.client.post(url, data)
 
-        self.assertTrue(mock_thread.called)
+        self.assertTrue(mock_sendmail.called)
 
-    @patch("tree.admin.Thread")
-    def test_should_send_multiple_mail(self, mock_thread):
+    @patch("tree.admin.send_mail")
+    def test_should_send_multiple_mail(self, mock_sendmail):
         url = reverse("admin:tree_father_changelist")
         fathers = Father.objects.all()
         data = {"action": "send_email", "_selected_action": [father.pk for father in fathers]}
-        response = self.client.post(url, data, follow=True)
+        response = self.client.post(url, data)
 
-        self.assertTrue(mock_thread.called)
-        self.assertEqual(mock_thread.call_count, 2)
+        self.assertTrue(mock_sendmail.called)
+        self.assertEqual(mock_sendmail.call_count, 2)

@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from datetime import datetime
-from threading import Thread
 
 from django import forms
 from django.conf.urls import url
@@ -121,11 +120,7 @@ class FatherAdmin(admin.ModelAdmin):
             email_address = father.email
             child_list = [child.name + " " + child.last_name for child in father.child_set.all()]
             text_message = "You have beautifull children: \n" + "\n".join(child_list) + "\nRegards"
-            t = Thread(target=send_mail, args=("Hello father",
-                                               text_message,
-                                               "admin@family.com",
-                                               email_address,))
-            t.start()
+            send_mail("Hello father", text_message, "admin@family.com", email_address)
 
     send_email.short_description = "send_email"
 
