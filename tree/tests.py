@@ -108,13 +108,12 @@ class ChildAdminTests(TestCase):
         url = reverse("admin:tree_child_changelist")
         child = Child.objects.get(id=1)
         data = {"action": "change_lastname", "_selected_action": [child.pk], "_last_name": "Pietraszek"}
-        response = self.client.post(url, data, follow=True)
+        response = self.client.post(url, data)
 
         self.assertEqual(mock_message.call_count, 1)
 
-        response.wsgi_request.method = "POST"
-        mock_message.assert_has_calls(response.wsgi_request,
-                                      unicode("Changed in selected records last name to Pietraszek"))
+        mock_message.assert_called_once_with(response.wsgi_request,
+                                             unicode("Changed in selected records last name to Pietraszek"))
 
     def test_should_find_child_with_same_name(self):
         father3 = Father.objects.create(name="Marcin", last_name="Tomasiak")
@@ -122,7 +121,7 @@ class ChildAdminTests(TestCase):
 
         url = reverse("admin:childlist")
         data = {"name": "Jan"}
-        response = self.client.get(url, data, follow=True)
+        response = self.client.get(url, data)
 
         qs = response.context_data['childs']
         self.assertEqual(2, qs.count())
@@ -132,14 +131,14 @@ class ChildAdminTests(TestCase):
     def test_should_find_child_with_same_last_name(self):
         url = reverse("admin:childlist")
         data = {"last_name": "Pietraszek"}
-        response = self.client.get(url, data, follow=True)
+        response = self.client.get(url, data)
 
         qs = response.context_data['childs']
         self.assertEqual(2, qs.count())
         last_names = [child.last_name for child in qs]
         self.assertEqual(['Pietraszek', 'Pietraszek'], last_names)
 
-    def test_should_find_child_wtih_same_birth(self):
+    def test_should_find_child_with_same_birth(self):
         father3 = Father.objects.create(name="Marcin", last_name="Tomasiak")
         Child.objects.create(name="Jan", last_name="Tomasiak", birth=datetime(2018, 1, 5), father=father3)
 
@@ -185,25 +184,40 @@ class FatherAndOtherClassAdminTests(ChildAdminTests):
     def test_child_toddler_view_should_display_correct_number_of_child(self):
         url = reverse("admin:tree_childistoddler_changelist")
         response = self.client.get(url)
+        self.assertContains(response, "Franciszek Pietraszek")
+        self.assertContains(response, "Tomasz Pietraszek")
+        self.assertNotContains(response, "Jan Michalski")
 
-    #       TODO how to get queryset NEXT TEST THE SAME
+    def test_child_toddler_view_should_display_correct_number_of_child(self):
+        url = reverse("admin:tree_childistoddler_changelist")
+        response = self.client.get(url)
+        self.assertContains(response, "Franciszek Pietraszek")
+        self.assertContains(response, "Tomasz Pietraszek")
+        self.assertNotContains(response, "Jan Michalski")
 
-    @patch('tree.admin.Thread')
+    def test_child_is_mine_should_one_children(self):
+        url = reverse("admin:tree_mychilds_changelist")
+        response = self.client.get(url)
+        self.assertNotContains(response, "Franciszek Pietraszek")
+        self.assertNotContains(response, "Tomasz Pietraszek")
+        self.assertContains(response, "Jan Michalski")
+
+    @patch('tree.admin.send_mail')
     def test_should_send_email(self, mock_sendmail):
         url = reverse("admin:tree_father_changelist")
         father = Father.objects.get(id=2)
         father.email = "marcin@pieraszek.pl"
         data = {"action": "send_email", "_selected_action": [father.pk]}
-        response = self.client.post(url, data, follow=True)
+        response = self.client.post(url, data)
 
         self.assertTrue(mock_sendmail.called)
 
-    @patch("tree.admin.Thread")
+    @patch("tree.admin.send_mail")
     def test_should_send_multiple_mail(self, mock_sendmail):
         url = reverse("admin:tree_father_changelist")
         fathers = Father.objects.all()
         data = {"action": "send_email", "_selected_action": [father.pk for father in fathers]}
-        response = self.client.post(url, data, follow=True)
+        response = self.client.post(url, data)
 
         self.assertTrue(mock_sendmail.called)
         self.assertEqual(mock_sendmail.call_count, 2)
