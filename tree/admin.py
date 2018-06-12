@@ -128,10 +128,10 @@ class FatherAdmin(admin.ModelAdmin):
 @admin.register(ChildIsToddler)
 class ChildIsToddlerAdmin(admin.ModelAdmin):
 
-    def get_queryset(self, request,):
+    def get_queryset(self, request):
         toddler_year = datetime.now().year - 3
-        queryset = Child.objects.filter(birth__year__gt=toddler_year)
-        return queryset
+        qs = Child.objects.filter(birth__year__gt=toddler_year)
+        return qs
 
 
 @admin.register(MyChilds)
