@@ -184,8 +184,23 @@ class FatherAndOtherClassAdminTests(ChildAdminTests):
     def test_child_toddler_view_should_display_correct_number_of_child(self):
         url = reverse("admin:tree_childistoddler_changelist")
         response = self.client.get(url)
+        self.assertContains(response, "Franciszek Pietraszek")
+        self.assertContains(response, "Tomasz Pietraszek")
+        self.assertNotContains(response, "Jan Michalski")
 
-    #       TODO how to get queryset NEXT TEST THE SAME
+    def test_child_toddler_view_should_display_correct_number_of_child(self):
+        url = reverse("admin:tree_childistoddler_changelist")
+        response = self.client.get(url)
+        self.assertContains(response, "Franciszek Pietraszek")
+        self.assertContains(response, "Tomasz Pietraszek")
+        self.assertNotContains(response, "Jan Michalski")
+
+    def test_child_is_mine_should_one_children(self):
+        url = reverse("admin:tree_mychilds_changelist")
+        response = self.client.get(url)
+        self.assertNotContains(response, "Franciszek Pietraszek")
+        self.assertNotContains(response, "Tomasz Pietraszek")
+        self.assertContains(response, "Jan Michalski")
 
     @patch('tree.admin.send_mail')
     def test_should_send_email(self, mock_sendmail):
