@@ -2,3 +2,11 @@ Django==1.11.13
 django-debug-toolbar==1.9.1
 pytz==2018.4
 sqlparse==0.2.4
+Django==1.11.13
+django-debug-toolbar==1.9.1
+funcsigs==1.0.2
+mock==2.0.0
+pbr==4.0.3
+pytz==2018.4
+six==1.11.0
+sqlparse==0.2.4

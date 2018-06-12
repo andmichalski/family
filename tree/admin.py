@@ -1,20 +1,26 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from .models import Child, Father, ChildIsToddler, MyChilds
-from django.contrib import admin
+
 from datetime import datetime
-from django.shortcuts import render
-from django.core import serializers
-from django.http import HttpResponseRedirect
+
 from django import forms
 from django.conf.urls import url
-from django.template.response import TemplateResponse
+from django.contrib import admin
+from django.core import serializers
+from django.core.mail import send_mail
 from django.db.models import Count
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from django.template.response import TemplateResponse
+
+from .models import Child, Father, ChildIsToddler, MyChilds
+
 
 # Register your models here.
 
 class ChildInline(admin.TabularInline):
     model = Child
+
 
 @admin.register(Child)
 class ChildAdmin(admin.ModelAdmin):
@@ -46,7 +52,6 @@ class ChildAdmin(admin.ModelAdmin):
             form = self.LastNameForm(request.POST)
             new_last_name = request.POST['_last_name']
             queryset.update(last_name=new_last_name)
-            # TODO mock message
             self.message_user(request, "Changed in selected records last name to {}".format(new_last_name))
             return HttpResponseRedirect(request.get_full_path(), {'form': form})
         return render(request, "admin/tree/child/change_last_name.html", {'users': queryset, 'form': form})
@@ -64,7 +69,7 @@ class ChildAdmin(admin.ModelAdmin):
         fathers = Father.objects.all()
         return TemplateResponse(request, "admin/tree/child/gen_tree.html", {'fathers': fathers})
 
-    def childdetailview(self,request):
+    def childdetailview(self, request):
         if 'child' in request.GET:
             child = Child.objects.get(id=request.GET['child'])
 
@@ -92,6 +97,8 @@ class ChildAdmin(admin.ModelAdmin):
 class FatherAdmin(admin.ModelAdmin):
     inlines = [ChildInline]
     change_list_template = "admin/tree/father/change_view.html"
+    list_display = ['father', 'childs']
+    actions = ["send_email"]
 
     def get_urls(self):
         urls = super(FatherAdmin, self).get_urls()
@@ -99,8 +106,24 @@ class FatherAdmin(admin.ModelAdmin):
         return my_urls + urls
 
     def parentlist(self, request):
-        parents = Father.objects.prefetch_related('child_set').annotate(child_count = Count('child'))
+        parents = Father.objects.prefetch_related('child_set').annotate(child_count=Count('child'))
         return TemplateResponse(request, "admin/tree/father/parent_list.html", {'parents': parents})
+
+    def childs(self, obj):
+        return ", ".join([child.name for child in obj.child_set.all()])
+
+    def father(self, obj):
+        return obj
+
+    def send_email(self, request, queryset):
+        for father in queryset.prefetch_related('child_set').all():
+            email_address = father.email
+            child_list = [child.name + " " + child.last_name for child in father.child_set.all()]
+            text_message = "You have beautifull children: \n" + "\n".join(child_list) + "\nRegards"
+            send_mail("Hello father", text_message, "admin@family.com", email_address)
+
+    send_email.short_description = "send_email"
+
 
 @admin.register(ChildIsToddler)
 class ChildIsToddlerAdmin(admin.ModelAdmin):
@@ -109,6 +132,7 @@ class ChildIsToddlerAdmin(admin.ModelAdmin):
         toddler_year = datetime.now().year - 3
         qs = Child.objects.filter(birth__year__gt=toddler_year)
         return qs
+
 
 @admin.register(MyChilds)
 class MyChildsAdmin(admin.ModelAdmin):
