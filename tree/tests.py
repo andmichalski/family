@@ -29,15 +29,15 @@ class MyChildManagerTests(TestCase):
 
     def test_manager_should_select_all_records_when_call_not_overriden_method(self):
         all_obj = Child.objects.all().count()
-        all_obj_child_manager = Child.mychilds_objects.all().count()
+        all_obj_child_manager = Child.cust_obj.all().count()
         self.assertEqual(all_obj, all_obj_child_manager)
 
     def test_child_should_have_two_test_managers(self):
-        self.assertTrue(Child.mychilds_objects)
+        self.assertTrue(Child.cust_obj)
         self.assertTrue(Child.objects)
 
     def test_child_should_be_mine(self):
-        childs = Child.mychilds_objects.is_mine()
+        childs = Child.cust_obj.is_mine()
         child = childs.get(name="Jan")
         father = child.father.__str__()
         self.assertEqual(father, "Andrzej Michalski")
@@ -45,12 +45,12 @@ class MyChildManagerTests(TestCase):
     def test_I_should_have_two_children(self):
         father = Father.objects.get(Q(name="Andrzej") & Q(last_name="Michalski"))
         Child.objects.create(name="Antoni", last_name="Michalski", birth=datetime(2017, 7, 12), father=father)
-        childs = Child.mychilds_objects.is_mine()
+        childs = Child.cust_obj.is_mine()
         self.assertEqual(childs.count(), 2)
 
     def test_I_shold_not_have_children(self):
-        Child.mychilds_objects.filter(Q(name="Jan") | Q(name="Antoni")).delete()
-        childs = Child.mychilds_objects.is_mine()
+        Child.cust_obj.filter(Q(name="Jan") | Q(name="Antoni")).delete()
+        childs = Child.cust_obj.is_mine()
         self.assertEqual(list(childs), [])
 
     def test_i_am_not_in_the_first_place_in_database(self):
@@ -188,12 +188,10 @@ class FatherAndOtherClassAdminTests(ChildAdminTests):
         self.assertContains(response, "Tomasz Pietraszek")
         self.assertNotContains(response, "Jan Michalski")
 
-    def test_child_toddler_view_should_display_correct_number_of_child(self):
-        url = reverse("admin:tree_childistoddler_changelist")
-        response = self.client.get(url)
-        self.assertContains(response, "Franciszek Pietraszek")
-        self.assertContains(response, "Tomasz Pietraszek")
-        self.assertNotContains(response, "Jan Michalski")
+    def test_cust_obj_manager_should_return_correct_number_of_toddlers(self):
+        toddlers = Child.cust_obj.is_toddler()
+        self.assertEqual(toddlers.count(), 2)
+        self.assertEqual([child.name for child in toddlers], ["Franciszek", "Tomasz"])
 
     def test_child_is_mine_should_one_children(self):
         url = reverse("admin:tree_mychilds_changelist")

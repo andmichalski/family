@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from datetime import datetime
-
 from django import forms
 from django.conf.urls import url
 from django.contrib import admin
@@ -129,8 +127,7 @@ class FatherAdmin(admin.ModelAdmin):
 class ChildIsToddlerAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
-        toddler_year = datetime.now().year - 3
-        qs = Child.objects.filter(birth__year__gt=toddler_year)
+        qs = Child.cust_obj.is_toddler()
         return qs
 
 
@@ -139,5 +136,5 @@ class MyChildsAdmin(admin.ModelAdmin):
     raw_id_fields = ['father']
 
     def get_queryset(self, request):
-        qs = Child.mychilds_objects.is_mine()
+        qs = Child.cust_obj.is_mine()
         return qs

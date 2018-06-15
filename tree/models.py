@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from datetime import datetime
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
@@ -8,13 +10,19 @@ from django.db import models
 # Create your models here.
 
 
-class MyChildManager(models.Manager):
+class ChildCustomManager(models.Manager):
+
     def is_mine(self):
         try:
             iam = Father.objects.get(id=1, name="Andrzej", last_name="Michalski")
         except ObjectDoesNotExist:
             print "Andrzej Michalski have to be on the first place in database with id=1 !!!!!"
         qs = iam.child_set.all()
+        return qs
+
+    def is_toddler(self):
+        toddler_year = datetime.now().year - 3
+        qs = Child.objects.filter(birth__year__gt=toddler_year)
         return qs
 
 
@@ -37,7 +45,7 @@ class Child(models.Model):
         return self.name + " " + self.last_name
 
     objects = models.Manager()
-    mychilds_objects = MyChildManager()
+    cust_obj = ChildCustomManager()
 
 
 class ChildIsToddler(Child):
